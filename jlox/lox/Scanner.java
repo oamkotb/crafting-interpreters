@@ -126,7 +126,7 @@ class Scanner
     return source.charAt(current);
   }
 
-  private char peakNext()
+  private char peekNext()
   {
     if (current + 1 >= source.length()) return '\0';
     return source.charAt(current + 1);
@@ -178,7 +178,7 @@ class Scanner
   {
     while (isDigit(peek())) advance();
 
-    if (peek() == '.' && isDigit(peakNext()))
+    if (peek() == '.' && isDigit(peekNext()))
     {
       advance();
       while (isDigit(peek())) advance();
