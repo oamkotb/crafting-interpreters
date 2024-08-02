@@ -1,13 +1,16 @@
 package lox;
 
-public class Interpreter implements Expr.Visitor<Object>
+import java.util.List;
+
+public class Interpreter implements Expr.Visitor<Object>, 
+                                    Stmt.Visitor<Void>
 {
-  public void interpret(Expr expression)
+  public void interpret(List<Stmt> statements)
   {
     try
     {
-      Object value = evalute(expression);
-      System.out.println(stringify(value));
+      for (Stmt statement : statements)
+        execute(statement);
     }
     catch (RuntimeError error)
     {
@@ -79,6 +82,7 @@ public class Interpreter implements Expr.Visitor<Object>
       case MINUS:
         checkNumberOperands(expr.operator, left, right);
         return (double)left - (double)right;
+        
       case PLUS:
         if (left instanceof Double && right instanceof Double)
           return (double)left + (double)right;
@@ -116,9 +120,29 @@ public class Interpreter implements Expr.Visitor<Object>
     return object.toString();
   }
 
+  @Override
+  public Void visitExpressionStmt(Stmt.Expression stmt)
+  {
+    evalute(stmt.expression);
+    return null;
+  }
+  
+  @Override
+  public Void visitPrintStmt(Stmt.Print stmt)
+  {
+    Object value = evalute(stmt.expression);
+    System.out.println(stringify(value));
+    return null;
+  }
+
   private Object evalute(Expr expr)
   {
     return expr.accept(this);
+  }
+
+  private void execute(Stmt stmt)
+  {
+    stmt.accept(this);
   }
 
   private boolean isTruthy(Object object)

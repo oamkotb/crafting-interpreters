@@ -2,6 +2,7 @@ package lox;
 
 import static lox.TokenType.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Parser
@@ -16,21 +17,39 @@ public class Parser
     this.tokens = tokens;
   }
 
-  public Expr parse()
+  public List<Stmt> parse()
   {
-    try
-    {
-      return expression();
-    }
-    catch (ParseError error)
-    {
-      return null;
-    }
+    List<Stmt> statements = new ArrayList<>();
+    while (!isAtEnd())
+      statements.add(statement());
+    
+    return statements;
   }
 
   private Expr expression()
   {
     return equality();
+  }
+
+  private Stmt statement()
+  {
+    if (match(PRINT)) return printStatement();
+
+    return expressionStatement();
+  }
+
+  private Stmt printStatement()
+  {
+    Expr value = expression();
+    consume(SEMICOLON, "Expect ';' after value.");
+    return new Stmt.Print(value);
+  }
+
+  private Stmt expressionStatement()
+  {
+    Expr expr = expression();
+    consume(SEMICOLON, "Expect ';' after expression.");
+    return new Stmt.Expression(expr);
   }
 
   private Expr equality()
@@ -171,32 +190,32 @@ public class Parser
     return new ParseError();
   }
 
-  private void synchronize()
-  {
-    advance();
+  // private void synchronize()
+  // {
+  //   advance();
 
-    while (!isAtEnd())
-    {
-      if (previous().type == SEMICOLON) return;
+  //   while (!isAtEnd())
+  //   {
+  //     if (previous().type == SEMICOLON) return;
 
-      switch (peek().type)
-      {
-        case CLASS:
-        case FUN:
-        case VAR:
-        case FOR:
-        case IF:
-        case WHILE:
-        case PRINT:
-        case RETURN:
-          return;
+  //     switch (peek().type)
+  //     {
+  //       case CLASS:
+  //       case FUN:
+  //       case VAR:
+  //       case FOR:
+  //       case IF:
+  //       case WHILE:
+  //       case PRINT:
+  //       case RETURN:
+  //         return;
 
-        default:
-          break;
-      }
+  //       default:
+  //         break;
+  //     }
 
-      advance();
-    }
-  }
+  //     advance();
+  //   }
+  // }
 }
 
