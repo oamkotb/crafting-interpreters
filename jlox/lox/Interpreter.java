@@ -27,6 +27,20 @@ public class Interpreter implements Expr.Visitor<Object>,
   }
 
   @Override
+  public Object visitLogicalExpr(Expr.Logical expr)
+  {
+    Object left = evalute(expr.left);
+
+    if (expr.operator.type == TokenType.OR)
+      if (isTruthy(left)) return left;
+    else
+      if(!isTruthy(left)) return left;
+
+
+    return evalute(expr.right);
+  }
+
+  @Override
   public Object visitGroupingExpr(Expr.Grouping expr)
   {
     return evalute(expr.expression);
@@ -134,7 +148,18 @@ public class Interpreter implements Expr.Visitor<Object>,
     evalute(stmt.expression);
     return null;
   }
-  
+
+  @Override
+  public Void visitIfStmt(Stmt.If stmt)
+  {
+    if (isTruthy(evalute(stmt.condition)))
+      execute(stmt.thenBranch);
+    else if (stmt.elseBranch != null)
+      execute(stmt.elseBranch);
+    
+    return null;
+  }
+
   @Override
   public Void visitPrintStmt(Stmt.Print stmt)
   {
